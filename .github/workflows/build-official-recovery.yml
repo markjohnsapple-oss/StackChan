@@ -1,0 +1,49 @@
+name: Build Official Recovery Firmware
+
+on:
+  push:
+    branches:
+      - official-recovery
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: espressif/idf:v5.5.4
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch StackChan dependencies
+        working-directory: firmware
+        run: python3 fetch_repos.py
+
+      - name: Build official StackChan firmware
+        working-directory: firmware
+        shell: bash
+        run: |
+          . "$IDF_PATH/export.sh"
+          idf.py build
+          idf.py merge-bin -o stackchan-official-recovery-full.bin -f raw
+
+      - name: Collect flash files
+        run: |
+          mkdir -p recovery-firmware
+          cp firmware/build/stackchan-official-recovery-full.bin recovery-firmware/
+          cp firmware/build/stack-chan.bin recovery-firmware/
+          cp firmware/build/bootloader/bootloader.bin recovery-firmware/
+          cp firmware/build/partition_table/partition-table.bin recovery-firmware/
+          cp firmware/build/flasher_args.json recovery-firmware/ || true
+          cp firmware/build/flash_args recovery-firmware/ || true
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: stackchan-official-recovery-firmware
+          path: recovery-firmware
+          if-no-files-found: error
