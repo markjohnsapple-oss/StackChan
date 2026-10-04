@@ -22,19 +22,19 @@ RP_M="6ce4b3c7-e4c8-4a69-ad88-a9d8543128e4"
 
 (bp/"manifest.json").write_text(json.dumps({
  "format_version":2,
- "header":{"name":"Milly AI Companion","description":"Milly AI companion for Minecraft Bedrock.","uuid":BP_H,"version":[1,2,0],"min_engine_version":[1,26,0]},
+ "header":{"name":"Milly AI Companion","description":"Milly AI companion for Minecraft Bedrock.","uuid":BP_H,"version":[1,3,0],"min_engine_version":[1,26,0]},
  "modules":[
-   {"type":"data","uuid":BP_D,"version":[1,2,0]},
-   {"type":"script","language":"javascript","entry":"scripts/main.js","uuid":BP_S,"version":[1,2,0]}
+   {"type":"data","uuid":BP_D,"version":[1,3,0]},
+   {"type":"script","language":"javascript","entry":"scripts/main.js","uuid":BP_S,"version":[1,3,0]}
  ],
- "dependencies":[{"uuid":RP_H,"version":[1,2,0]},{"module_name":"@minecraft/server","version":"2.10.0"}],
+ "dependencies":[{"uuid":RP_H,"version":[1,3,0]},{"module_name":"@minecraft/server","version":"2.8.0"}],
  "metadata":{"authors":["Arcade Home Labs"]}
 }, indent=2), encoding="utf-8")
 
 (rp/"manifest.json").write_text(json.dumps({
  "format_version":2,
- "header":{"name":"Milly AI Companion Resources","description":"Milly visuals.","uuid":RP_H,"pack_scope":"world","version":[1,2,0],"min_engine_version":[1,26,0]},
- "modules":[{"type":"resources","uuid":RP_M,"version":[1,2,0]}],
+ "header":{"name":"Milly AI Companion Resources","description":"Milly visuals.","uuid":RP_H,"pack_scope":"world","version":[1,3,0],"min_engine_version":[1,26,0]},
+ "modules":[{"type":"resources","uuid":RP_M,"version":[1,3,0]}],
  "metadata":{"authors":["Arcade Home Labs"]}
 }, indent=2), encoding="utf-8")
 
