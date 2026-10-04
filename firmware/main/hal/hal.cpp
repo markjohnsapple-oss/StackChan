@@ -40,6 +40,7 @@ void Hal::init()
     imu_init();
     servo_init();
     lvgl_init();
+    startNexusBridge();
 }
 
 /* -------------------------------------------------------------------------- */
