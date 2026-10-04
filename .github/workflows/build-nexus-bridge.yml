@@ -25,7 +25,9 @@ jobs:
 
       - name: Build CoreS3 firmware
         working-directory: firmware
+        shell: bash
         run: |
+          . "$IDF_PATH/export.sh"
           idf.py build
           idf.py merge-bin -o stackchan-nexus-bridge-full.bin -f raw
 
