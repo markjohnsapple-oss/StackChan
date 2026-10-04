@@ -1,0 +1,62 @@
+name: Publish Milly Official Add-on
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-milly-official.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-validate-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Milly source
+        uses: actions/checkout@v4
+        with:
+          ref: milly-download
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Generate Milly source packs
+        run: python milly/build.py
+
+      - name: Create Creator Tools project layout
+        run: |
+          rm -rf milly/project
+          mkdir -p milly/project/behavior_packs milly/project/resource_packs
+          cp -a milly/build/Milly_Behavior milly/project/behavior_packs/Milly_AI_Companion
+          cp -a milly/build/Milly_Resources milly/project/resource_packs/Milly_AI_Companion_Resources
+          find milly/project -maxdepth 4 -type f | sort
+
+      - name: Validate with Mojang Minecraft Creator Tools
+        run: |
+          mkdir -p milly/validation
+          npx -y @minecraft/creator-tools@latest validate addon -i milly/project --json --force -o milly/validation | tee milly/validation-result.json
+
+      - name: Export with Mojang Minecraft Creator Tools
+        run: |
+          rm -rf milly/official-release
+          mkdir -p milly/official-release
+          npx -y @minecraft/creator-tools@latest exportaddon -i milly/project -o milly/official-release --force
+          echo "Exported files:"
+          find milly/official-release -maxdepth 2 -type f -print
+          FILE="$(find milly/official-release -type f -name '*.mcaddon' | head -n 1)"
+          test -n "$FILE"
+          cp "$FILE" milly/official-release/Milly-AI-Companion-v1.3.0.mcaddon
+
+      - name: Publish GitHub Release download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete milly-v1.3.0 --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag 2>/dev/null || true
+          gh release create milly-v1.3.0             milly/official-release/Milly-AI-Companion-v1.3.0.mcaddon             --repo "$GITHUB_REPOSITORY"             --target milly-download             --title "Milly AI Companion v1.3.0 - Minecraft Bedrock"             --notes "Official Creator Tools export of Milly AI Companion for Minecraft Bedrock. Download the .mcaddon asset and open it with Minecraft."
