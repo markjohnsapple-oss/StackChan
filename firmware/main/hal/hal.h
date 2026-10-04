@@ -276,7 +276,8 @@ public:
     /* --------------------------------- Network -------------------------------- */
     void startNetwork(std::function<void(std::string_view)> onLog);
     WifiStatus getWifiStatus();
-    void startSntp();\n    void startNexusBridge();
+    void startSntp();
+    void startNexusBridge();
 
     /* -------------------------------- App center ------------------------------- */
     app_center::AppInfoList_t fetchAppList();
