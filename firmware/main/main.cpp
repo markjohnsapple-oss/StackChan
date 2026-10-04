@@ -22,6 +22,10 @@ extern "C" void app_main(void)
     // HAL init
     GetHAL().init();
 
+    // Start the Nexus bridge only after the normal hardware init has completed.
+    // The bridge itself waits in the background until Wi-Fi is ready.
+    GetHAL().startNexusBridge();
+
     // Setup ui hal
     ui_hal::on_delay([](uint32_t ms) { GetHAL().delay(ms); });
     ui_hal::on_get_tick([]() { return GetHAL().millis(); });
