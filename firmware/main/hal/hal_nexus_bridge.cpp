@@ -24,7 +24,7 @@ static constexpr char kSettingsNs[] = "nexus_bridge";
 static constexpr char kPersonalityKey[] = "personality";
 static constexpr char kMemoryKey[] = "short_memory";
 static constexpr char kVoiceKey[] = "voice";
-static constexpr uint16_t kBridgePort = 8765;
+static constexpr uint16_t kBridgePort = 8787;
 
 static std::string get_setting(const char* key, const char* fallback = "")
 {
