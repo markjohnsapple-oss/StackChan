@@ -1,0 +1,39 @@
+name: Build Milly Bedrock Add-on
+
+on:
+  push:
+    branches: [milly-download]
+    paths:
+      - "milly/build.py"
+      - ".github/workflows/build-milly.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: milly-download
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build .mcaddon
+        run: python milly/build.py
+
+      - name: Commit downloadable add-on
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add milly/downloads/Milly-AI-Companion.mcaddon
+          if git diff --cached --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Build Milly AI Companion mcaddon"
+            git push origin HEAD:milly-download
+          fi
