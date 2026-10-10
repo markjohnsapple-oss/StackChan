@@ -74,6 +74,7 @@ public final class MainActivity extends Activity {
     openGhostOrPicker();
   }
   private void openGhostOrPicker(){
+    try(InputStream in=getAssets().open("index.html")){web.loadUrl("file:///android_asset/index.html");return;}catch(Exception ignored){}
     File f=new File(getFilesDir(),"ghost.html");
     if(f.exists()&&f.length()>50000)web.loadUrl("file://"+f.getAbsolutePath());
     else web.loadDataWithBaseURL("https://appassets.androidplatform.net/",
