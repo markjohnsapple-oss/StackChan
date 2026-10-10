@@ -1,4 +1,4 @@
-package com.arcadehomelabs.ghosttest;
+package com.arcadehomelabs.ghostai;
 
 import android.Manifest;
 import android.app.Activity;
