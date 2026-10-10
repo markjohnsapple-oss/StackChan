@@ -1,0 +1,58 @@
+name: Pocket Pal Speech Libraries Bundle
+on:
+  push:
+    branches: [pocket-pal-tts-dependencies]
+    paths:
+      - '.github/workflows/pocket-pal-speech-libraries.yml'
+  workflow_dispatch:
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch library sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p pocket-pal-libs
+          git clone --depth 1 https://github.com/pschatzmann/arduino-espeak-ng.git pocket-pal-libs/arduino-espeak-ng
+          git clone --depth 1 https://github.com/pschatzmann/arduino-posix-fs.git pocket-pal-libs/arduino-posix-fs
+          git clone --depth 1 https://github.com/pschatzmann/arduino-audio-tools.git pocket-pal-libs/arduino-audio-tools
+          find pocket-pal-libs -name .git -type d -prune -exec rm -rf {} +
+          test -e pocket-pal-libs/arduino-espeak-ng/src/espeak.h || test -e pocket-pal-libs/arduino-espeak-ng/arduino/espeak.h
+          for d in pocket-pal-libs/*; do test -e "$d/library.properties"; done
+      - name: Include quick installation instructions
+        shell: bash
+        run: |
+          cat > pocket-pal-libs/INSTALL_README.txt <<'EOF'
+          Pocket Pal Speech Libraries - included source distributions
+          Copy the three arduino-* folders next to this README into your
+          Arduino IDE sketchbook libraries directory.
+          Common Windows path: Documents\\Arduino\\libraries
+          CLOSE AND REOPEN Arduino IDE, then Verify the firmware.
+          Do not copy the outer pocket-pal-libs folder into libraries.
+          The three libraries are third-party works by Phil Schatzmann.
+          See each library's included license and README for terms.
+          EOF
+          cat > pocket-pal-libs/INSTALL_LIBRARIES_WINDOWS.ps1 <<'EOF'
+          $ErrorActionPreference = 'Stop'
+          $sketch = Join-Path ([Environment]::GetFolderPath('MyDocuments')) 'Arduino'
+          $dest = Join-Path $sketch 'libraries'
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          $src = $PSScriptRoot
+          foreach ($library in @('arduino-espeak-ng','arduino-posix-fs','arduino-audio-tools')) {
+              $from = Join-Path $src $library
+              if (-not (Test-Path (Join-Path $from 'library.properties'))) { throw "Missing library: $library" }
+              $to = Join-Path $dest $library
+              if (Test-Path $to) { Write-Host "Skipping existing $library"; continue }
+              Copy-Item -Recurse $from $to
+              Write-Host "Installed $library"
+          }
+          Write-Host "Please restart Arduino IDE before verifying."
+          EOF
+          cd pocket-pal-libs
+          zip -q -r ../POCKET_PAL_ARDUINO_SPEECH_LIBRARIES.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pocket-pal-tts-libraries
+          path: POCKET_PAL_ARDUINO_SPEECH_LIBRARIES.zip
+          if-no-files-found: error
