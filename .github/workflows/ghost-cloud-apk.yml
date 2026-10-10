@@ -28,7 +28,7 @@ jobs:
           SDK_MANAGER="$(find "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools" -type f -name sdkmanager | head -n 1)"
           "$SDK_MANAGER" --install "platforms;android-35" "build-tools;35.0.0"
       - name: Build native Ghost APK
-        run: gradle :app:assembleDebug --no-daemon --stacktrace
+        run: gradle :app:bundleRelease --no-daemon --stacktrace
       - name: Collect APK signing tool
         run: |
           mkdir -p build-helper
@@ -43,5 +43,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Ghost-Android-Bluetooth-Audio-APK
-          path: ghost-cloud-build/app/build/outputs/apk/debug/app-debug.apk
+          path: ghost-cloud-build/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
