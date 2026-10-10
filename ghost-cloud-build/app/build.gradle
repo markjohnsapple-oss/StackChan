@@ -1,7 +1,7 @@
 plugins { id 'com.android.application' }
 android {
- namespace 'com.arcadehomelabs.ghosttest'
+ namespace 'com.arcadehomelabs.ghostai'
  compileSdk 36
- defaultConfig { applicationId 'com.arcadehomelabs.ghosttest'; minSdk 26; targetSdk 36; versionCode 30405; versionName '3.0.4' }
+ defaultConfig { applicationId 'com.arcadehomelabs.ghostai'; minSdk 26; targetSdk 36; versionCode 30405; versionName '3.0.4' }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
