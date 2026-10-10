@@ -29,6 +29,16 @@ jobs:
           "$SDK_MANAGER" --install "platforms;android-35" "build-tools;35.0.0"
       - name: Build native Ghost APK
         run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Collect APK signing tool
+        run: |
+          mkdir -p build-helper
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" build-helper/apksigner.jar
+      - name: Upload APK signing tool
+        uses: actions/upload-artifact@v4
+        with:
+          name: Ghost-Android-apksigner
+          path: ghost-cloud-build/build-helper/apksigner.jar
+          if-no-files-found: error
       - name: Upload Ghost APK
         uses: actions/upload-artifact@v4
         with:
