@@ -1,7 +1,7 @@
 plugins { id 'com.android.application' }
 android {
- namespace 'uk.co.arcadehomelabs.ghost'
- compileSdk 35
- defaultConfig { applicationId 'uk.co.arcadehomelabs.ghost'; minSdk 26; targetSdk 35; versionCode 3041; versionName '3.0.4-cloud' }
+ namespace 'com.arcadehomelabs.ghosttest'
+ compileSdk 36
+ defaultConfig { applicationId 'com.arcadehomelabs.ghosttest'; minSdk 26; targetSdk 36; versionCode 30405; versionName '3.0.4' }
  compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
 }
