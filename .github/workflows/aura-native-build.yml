@@ -35,12 +35,13 @@ jobs:
       - name: Install Android SDK dependencies
         run: |
           SDKMANAGER=$(find /usr/local/lib/android/sdk/cmdline-tools -name sdkmanager -type f | head -1)
-          "$SDKMANAGER" --sdk_root=/usr/local/lib/android/sdk --install 'platforms;android-37' 'build-tools;37.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
+          "$SDKMANAGER" --sdk_root=/usr/local/lib/android/sdk --install 'platforms;android-36' 'build-tools;36.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
       - name: Free build disk space
         run: sudo rm -rf /usr/share/dotnet /opt/ghc || true
       - name: Prepare AURA-only source overrides
         shell: bash
         run: |
+          sed -i 's/buildToolsVersion = "37.0.0"/buildToolsVersion = "36.0.0"/;s/compileSdkVersion = 37/compileSdkVersion = 36/' pocketpal/android/build.gradle
           cp aura/App.tsx pocketpal/App.tsx
           python3 - <<'PY'
           import pathlib,json,re,base64
