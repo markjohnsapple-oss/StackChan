@@ -1,0 +1,119 @@
+name: AURA native Qwen APK (isolated test)
+on:
+  push:
+    branches: [aura-native-apk-build]
+    paths:
+      - 'aura/**'
+      - '.github/workflows/aura-native-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      ORG_GRADLE_PROJECT_rnllamaBuildFromSource: 'true'
+      ORG_GRADLE_PROJECT_rnllamaVariants: 'rnllama'
+      ORG_GRADLE_PROJECT_reactNativeArchitectures: 'arm64-v8a'
+    steps:
+      - name: Checkout isolated AURA build files
+        uses: actions/checkout@v4
+      - name: Get upstream PocketPal native source
+        run: git clone --depth 1 https://github.com/a-ghorbani/pocketpal-ai.git pocketpal
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.21.0'
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Android tools
+        uses: android-actions/setup-android@v3
+      - name: Install Android SDK dependencies
+        run: sdkmanager --install 'platforms;android-37' 'build-tools;37.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
+      - name: Free build disk space
+        run: sudo rm -rf /usr/share/dotnet /opt/ghc || true
+      - name: Prepare AURA-only source overrides
+        shell: bash
+        run: |
+          cp aura/App.tsx pocketpal/App.tsx
+          python3 - <<'PY'
+          import pathlib,json,re,base64
+          app=pathlib.Path('pocketpal')
+          html=pathlib.Path('aura/AURA_NATIVE_HTML.html').read_text(encoding='utf-8')
+          (app/'auraHtml.generated.ts').write_text('export const AURA_HTML = '+json.dumps(html,ensure_ascii=True)+';\n',encoding='utf-8')
+          build=app/'android/app/build.gradle'
+          s=build.read_text()
+          pos=s.find('prod {',s.find('productFlavors'))
+          if pos<0: raise RuntimeError('Cannot locate Android prod flavour')
+          end=s.find('\n',s.find('dimension "distribution"',pos))
+          s=s[:end]+ '\n            applicationIdSuffix ".ahlclone"' +s[end:]
+          build.write_text(s)
+          strings=app/'android/app/src/main/res/values/strings.xml'
+          strings.write_text(strings.read_text().replace('>PocketPal<','>AURA AHL AI<'))
+          app_json=app/'app.json'
+          a=json.loads(app_json.read_text());a['displayName']='AURA AHL AI';app_json.write_text(json.dumps(a))
+          # Preserve the user's actual icon embedded in AURA's HTML.
+          m=re.search(r'data:image/webp;base64,([A-Za-z0-9+/=]+)',html)
+          if m:
+              src=app/'android/app/src/main/res'
+              icon=base64.b64decode(m.group(1))
+              pathlib.Path('/tmp/aura_icon.webp').write_bytes(icon)
+              print('AURA embedded icon found',len(icon),'bytes')
+          else:
+              print('No embedded icon found; will keep original native launcher image for build test')
+          PY
+          cat > pocketpal/android/app/google-services.json <<'JSON'
+          {"project_info":{"project_number":"000000000000","project_id":"dummy-aura-local-test","storage_bucket":"dummy-aura-local-test.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000","android_client_info":{"package_name":"com.pocketpalai.ahlclone"}},"api_key":[{"current_key":"dummy-api-key-offline-test"}]}]}
+          JSON
+          cat > pocketpal/.env <<'ENV'
+          FIREBASE_FUNCTIONS_URL=https://example.invalid
+          SUPABASE_URL=https://example.invalid
+          SUPABASE_ANON_KEY=dummy
+          PALSHUB_API_BASE_URL=https://example.invalid
+          APP_URL=pocketpal://app
+          ENABLE_PALSHUB_INTEGRATION=false
+          ENABLE_AUTHENTICATION=false
+          ENABLE_OFFLINE_MODE=true
+          GOOGLE_IOS_CLIENT_ID=dummy
+          GOOGLE_WEB_CLIENT_ID=dummy
+          ENV
+      - name: Set AURA launcher icon
+        shell: bash
+        run: |
+          python3 -m pip install --quiet pillow --break-system-packages || python3 -m pip install --quiet pillow
+          python3 - <<'PY'
+          import pathlib
+          from PIL import Image
+          p=pathlib.Path('/tmp/aura_icon.webp')
+          if not p.exists(): raise RuntimeError('AURA app icon missing from supplied HTML')
+          image=Image.open(p).convert('RGBA')
+          root=pathlib.Path('pocketpal/android/app/src/main/res')
+          for suffix,size in [('mdpi',48),('hdpi',72),('xhdpi',96),('xxhdpi',144),('xxxhdpi',192)]:
+              target=root/('mipmap-'+suffix)
+              target.mkdir(parents=True,exist_ok=True)
+              for name in ['ic_launcher.png','ic_launcher_round.png']:
+                  image.resize((size,size),Image.Resampling.LANCZOS).save(target/name)
+          PY
+      - name: Install JS dependencies
+        run: |
+          cd pocketpal
+          npm install --global yarn@1.22.22
+          yarn install --frozen-lockfile
+      - name: Build native Android APK
+        run: |
+          cd pocketpal/android
+          chmod +x gradlew
+          ./gradlew assembleProdDebug --no-daemon --stacktrace
+      - name: Upload installable debug APK
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AURA-Native-Qwen-Test-APK
+          path: pocketpal/android/app/build/outputs/apk/prod/debug/app-prod-debug.apk
+          if-no-files-found: error
