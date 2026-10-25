@@ -33,7 +33,9 @@ jobs:
           distribution: temurin
           java-version: '17'
       - name: Install Android SDK dependencies
-        run: |\n          SDKMANAGER=$(find /usr/local/lib/android/sdk/cmdline-tools -name sdkmanager -type f | head -1)\n          "$SDKMANAGER" --sdk_root=/usr/local/lib/android/sdk --install 'platforms;android-37' 'build-tools;37.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
+        run: |
+          SDKMANAGER=$(find /usr/local/lib/android/sdk/cmdline-tools -name sdkmanager -type f | head -1)
+          "$SDKMANAGER" --sdk_root=/usr/local/lib/android/sdk --install 'platforms;android-37' 'build-tools;37.0.0' 'ndk;27.3.13750724' 'cmake;3.22.1'
       - name: Free build disk space
         run: sudo rm -rf /usr/share/dotnet /opt/ghc || true
       - name: Prepare AURA-only source overrides
@@ -50,7 +52,8 @@ jobs:
           pos=s.find('prod {',s.find('productFlavors'))
           if pos<0: raise RuntimeError('Cannot locate Android prod flavour')
           end=s.find('\n',s.find('dimension "distribution"',pos))
-          s=s[:end]+ '\n            applicationIdSuffix ".ahlclone"' +s[end:]
+          s=s[:end]+ '
+            applicationIdSuffix ".ahlclone"' +s[end:]
           build.write_text(s)
           strings=app/'android/app/src/main/res/values/strings.xml'
           strings.write_text(strings.read_text().replace('>PocketPal<','>AURA AHL AI<'))
