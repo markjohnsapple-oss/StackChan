@@ -53,8 +53,7 @@ jobs:
           pos=s.find('prod {',s.find('productFlavors'))
           if pos<0: raise RuntimeError('Cannot locate Android prod flavour')
           end=s.find('\n',s.find('dimension "distribution"',pos))
-          s=s[:end]+ '
-            applicationIdSuffix ".ahlclone"' +s[end:]
+          s=s[:end]+ chr(10) + '            applicationIdSuffix ".ahlclone"' +s[end:]
           build.write_text(s)
           strings=app/'android/app/src/main/res/values/strings.xml'
           strings.write_text(strings.read_text().replace('>PocketPal<','>AURA AHL AI<'))
